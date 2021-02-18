@@ -3,7 +3,8 @@
 //
 //  Temperature DS18B20-macOS
 //
-//  Created by Charles Vercauteren on 18/11/2020.
+//  ©2021 Charles Vercauteren
+//  18 february 2021
 //
 
 import Cocoa
@@ -14,6 +15,7 @@ struct LogEntry {
     var temperature = ""
 }
 
+// Commands for Arduino DS18B20_Wifi
 let MESSAGE_EMPTY = ""
 let GET_TEMPERATURE = "10"
 let SET_TIME = "20"
@@ -26,9 +28,9 @@ let SET_HOSTNAME = "41"
 
 let LOG_INTERVAL = "1800"
 
-let UPDATE_INTERVAL = 1     // Update view
+let UPDATE_INTERVAL = 1             // Update view (s)
 
-let PORTNUMBER: UInt16 = 2000
+let PORTNUMBER: UInt16 = 2000       //  UDP port number server
 
 // Variable used to return message from NWConnection.receiveMessage closure
 var reply = ""
@@ -36,15 +38,14 @@ var reply = ""
 class ViewController: NSViewController {
 
     @IBOutlet weak var hostNameFromArduino: NSTextField!
-    @IBOutlet weak var hostNameForArduino: NSTextField!
-    @IBOutlet weak var ipAddress: NSTextField!
+    @IBOutlet weak var hostName: NSTextField!
+    @IBOutlet weak var ipAddressArduino: NSTextField!
     @IBOutlet weak var temperatureOut: NSTextField!
     @IBOutlet weak var timeFromArduino: NSTextField!
     @IBOutlet weak var logInterval: NSTextField!
     @IBOutlet weak var logIntervalFromArduino: NSTextField!
     @IBOutlet weak var logTable: NSTableView!
     @IBOutlet weak var info: NSTextField!
-    
     
     @IBOutlet weak var connectBtn: NSButton!
     @IBOutlet weak var setTimeBtn: NSButton!
@@ -67,7 +68,6 @@ class ViewController: NSViewController {
     
     var log = [LogEntry]()
 
-
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -81,19 +81,19 @@ class ViewController: NSViewController {
         setTimeOnArduinoBtn.isEnabled = false
         setHostNameBtn.isEnabled = false
         
-        //
+        // Info for user
         info.stringValue = "Please connect to thermometer."
         
+        // Init table with log
         logTable.delegate = self
         logTable.dataSource = self
-        
     }
 
     @IBAction func connect(_ sender: NSButton) {
-        // Verbreek huidige verbinding
+        // Disconnect current connection
         timer.invalidate()
         server?.forceCancel()
-        // Update display
+        // Update display now we are disconnected
         info.stringValue = "Connecting."
         hostNameFromArduino.stringValue = "------"
         temperatureOut.stringValue = "--.-- °C"
@@ -101,28 +101,28 @@ class ViewController: NSViewController {
         logIntervalFromArduino.stringValue = "Log interval: -- s"
 
         //Create host
-        let host = NWEndpoint.Host(ipAddress.stringValue)
+        let host = NWEndpoint.Host(ipAddressArduino.stringValue)
         //Create port
         let port = NWEndpoint.Port(rawValue: portNumber)!
         //Create endpoint
-        //if server != nil { server!.cancel() }
         server = NWConnection(host: host, port: port, using: NWParameters.udp)
         server?.stateUpdateHandler = {(newState) in self.stateUpdateHandler(newState: newState) }
         server?.start(queue: .main)
-
     }
     
     private func startTimer() {
         if !timer.isValid {
-        timer = Timer.scheduledTimer(timeInterval: interval,
-                                     target: self,
-                                     selector: #selector(timerTic),
-                                     userInfo: nil,
-                                     repeats: true)
+            timer = Timer.scheduledTimer(timeInterval: interval,
+                                         target: self,
+                                         selector: #selector(timerTic),
+                                         userInfo: nil,
+                                         repeats: true)
         }
     }
     
     @objc func timerTic() {
+        // On every timertic use a different command to
+        // question the Arduino
         switch commandToSend {
         case GET_TEMPERATURE:
             commandToSend = GET_TIME
@@ -140,7 +140,6 @@ class ViewController: NSViewController {
         
         self.sendCommand(server: self.server!, command: commandToSend)
         self.receiveReply(server: self.server!)
-        
     }
     
     private func stateUpdateHandler(newState: NWConnection.State){
@@ -150,10 +149,10 @@ class ViewController: NSViewController {
         case .waiting:
             print("State: Waiting.")
         case .ready:
+            // Connection available, start questioning the Arduino
             print("State: Ready.")
             startTimer()
             setTimeBtn.isEnabled = true
-            //viewLogBtn.isEnabled = true
             saveLogBtn.isEnabled = true
             setLogIntervalBtn.isEnabled = true
             setTimeOnArduinoBtn.isEnabled = true
@@ -181,7 +180,7 @@ class ViewController: NSViewController {
         
         var logString = ""
         
-        // completion handler receiveMessage not called if nothing received,
+        // Completion handler receiveMessage not called if nothing received,
         // make sure to empty reply after valid receive
         server.receiveMessage (completion: {(content, context,   isComplete, error) in
             let replyLocal = String(decoding: content ?? Data(), as:   UTF8.self)
@@ -192,31 +191,29 @@ class ViewController: NSViewController {
         let firstSpace = reply.firstIndex(of: " ") ?? reply.endIndex
         let result = reply[..<firstSpace]
         
+        // Evaluate the answer from the Arduino
         info.stringValue = "Connected."
         switch result {
         case GET_TEMPERATURE:
             self.temperatureOut.stringValue = reply.suffix(from: firstSpace) + " °C"
-            reply = ""
         case GET_TIME:
             self.timeFromArduino.stringValue = "Time: " + String(reply.suffix(from: firstSpace))
-            reply = ""
         case GET_LOG:
             let startOfString = reply.index(after: firstSpace)  //Remove space
             logString = String(reply.suffix(from: startOfString))
             log = decodeLog(log: logString)
             logTable.reloadData()
-            reply = ""
         case GET_LOG_INTERVAL:
             logIntervalFromArduino.stringValue = "Log interval: " + String(reply.suffix(from: firstSpace))
-            reply = ""
         case GET_HOSTNAME:
             hostNameFromArduino.stringValue = String(reply.suffix(from: firstSpace))
-            reply = ""
         case MESSAGE_EMPTY:
             info.stringValue = "Waiting for sensor."
         default:
             print("Unknown command.")
         }
+        reply = ""
+
     }
     
     @IBAction func setTimeOnArduino(_ sender: NSButton) {
@@ -249,13 +246,13 @@ class ViewController: NSViewController {
     }
     
     @IBAction func logIntervalBtn(_ sender: NSButton) {
-        //Stop timer so we can set the time
+        //Stop timer so we can set the log interval
         timer.invalidate()
         
         // Waiting for response
         logIntervalFromArduino.stringValue = "Log interval: ---- s"
         
-        // Send SET_TIME command
+        // Send SET_LOG_INTERVAL command
         let setTimeCommand = SET_LOG_INTERVAL + " " + logInterval.stringValue
         server!.send(content: setTimeCommand.data(using: String.Encoding.ascii),
                 completion: .contentProcessed({error in
@@ -274,14 +271,14 @@ class ViewController: NSViewController {
     }
     
     @IBAction func setHostnameOnArduino(_ sender: NSButton) {
-        //Stop timer so we can set the time
+        //Stop timer so we can set the hostname
         timer.invalidate()
         
         // Wait for response
         hostNameFromArduino.stringValue = "------"
         
         // Send SET_HOSTNAME command
-        let setHostnameCommand = SET_HOSTNAME +  " " + hostNameForArduino.stringValue
+        let setHostnameCommand = SET_HOSTNAME +  " " + hostName.stringValue
         server!.send(content: setHostnameCommand.data(using: String.Encoding.ascii),
                 completion: .contentProcessed({error in
                      if let error = error {
@@ -298,26 +295,6 @@ class ViewController: NSViewController {
         startTimer()
     }
     
-    /*
-    @IBAction func viewLog(_ sender: NSButton) {
-        print("View log")
-        
-        // Send GET_LOG command
-        server!.send(content: GET_LOG.data(using: String.Encoding.ascii),
-                     completion: .contentProcessed({error in
-                        if let error = error {
-                            print("error while sending data: \(error).")
-                            return
-                        }
-                     }))
-        // Receive response
-        server!.receiveMessage (completion: {(content, context,   isComplete, error) in
-            print(String(decoding: content!, as:   UTF8.self))
-            let toSave = String(decoding: content!, as:   UTF8.self)
-            let firstSpace = toSave.firstIndex(of: " ") ?? toSave.endIndex
-            let index = toSave.index(after: firstSpace)
-        })
-    }*/
     @IBAction func saveLog(_ sender: NSButton) {
 
         //Stop timer so we can get the current log
@@ -379,12 +356,10 @@ class ViewController: NSViewController {
         while index != toDecode.endIndex {
             index = toDecode.firstIndex(of: "\n") ?? toDecode.endIndex
             if index != toDecode.endIndex {
-                //print(String(toDecode[...index]))
                 let entry = decodeLogEntry(entry: String(toDecode[...index]))
                 decoded.append(entry)
                 toDecode = String(toDecode[toDecode.index(after: index)...])
             }
-
         }
         
         return decoded.reversed()
@@ -393,7 +368,6 @@ class ViewController: NSViewController {
     private func decodeLogEntry(entry: String) -> LogEntry {
         var remains = ""
         var temperature = ""
-        //print(entry)
         var index = entry.firstIndex(of: "\t") ?? entry.endIndex
         var time = String(entry[..<index])
         if time == "99:99:99" { time = "--:--:--" }
@@ -429,7 +403,6 @@ extension ViewController: NSTableViewDelegate {
         if tableColumn == tableView.tableColumns[0] {
             text = log[row].time
             cellIdentifier = "Time"
-            
         }
         
         if tableColumn == tableView.tableColumns[1] {

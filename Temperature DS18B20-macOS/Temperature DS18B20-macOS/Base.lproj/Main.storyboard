@@ -351,10 +351,10 @@
                     </view>
                     <connections>
                         <outlet property="connectBtn" destination="KAx-iZ-hrr" id="W6V-Im-cGs"/>
-                        <outlet property="hostNameForArduino" destination="dR8-Ys-OGl" id="fQH-iu-GOZ"/>
-                        <outlet property="hostNameFromArduino" destination="tA9-xI-Eff" id="jj9-ex-pmo"/>
+                        <outlet property="hostName" destination="dR8-Ys-OGl" id="AdO-ms-7f7"/>
+                        <outlet property="hostNameFromArduino" destination="tA9-xI-Eff" id="Uhc-UC-Gha"/>
                         <outlet property="info" destination="dG0-5I-Mia" id="Rb7-Qk-bOB"/>
-                        <outlet property="ipAddress" destination="7yX-R5-BJQ" id="Qlk-BG-TbG"/>
+                        <outlet property="ipAddressArduino" destination="7yX-R5-BJQ" id="mBI-1o-2vx"/>
                         <outlet property="logInterval" destination="fM7-Fx-nDQ" id="U3d-Lg-Tge"/>
                         <outlet property="logIntervalFromArduino" destination="thb-M3-2UH" id="1CL-CW-UPL"/>
                         <outlet property="logTable" destination="Fni-Zg-A6t" id="Azm-Lk-Qbm"/>

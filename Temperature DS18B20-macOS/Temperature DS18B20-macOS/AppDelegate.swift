@@ -1,17 +1,15 @@
 //
 //  AppDelegate.swift
-//  mTempClientUDP
+//  Temperature DS18B20-macOS
 //
-//  Created by Charles Vercauteren on 18/11/2020.
+//  ©2021 Charles Vercauteren
+//  18 february 2021
 //
 
 import Cocoa
 
 @main
 class AppDelegate: NSObject, NSApplicationDelegate {
-
-    
-
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         // Insert code here to initialize your application
@@ -22,7 +20,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     }
     
-    // Sluit app bij sluiten venster
+    // Close app when closing Windows
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
             return true
     }
