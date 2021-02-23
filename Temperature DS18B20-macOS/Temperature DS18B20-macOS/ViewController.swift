@@ -46,7 +46,7 @@ class ViewController: NSViewController {
     @IBOutlet weak var logIntervalFromArduino: NSTextField!
     @IBOutlet weak var logTable: NSTableView!
     @IBOutlet weak var info: NSTextField!
-    
+        
     @IBOutlet weak var connectBtn: NSButton!
     @IBOutlet weak var setTimeBtn: NSButton!
     @IBOutlet weak var saveLogBtn: NSButton!
@@ -57,6 +57,7 @@ class ViewController: NSViewController {
     //Update interval properties
     var timer = Timer()
     let interval = TimeInterval(UPDATE_INTERVAL)     //Seconds
+    var logIntervalString = "10"
     
     // First command to send to Arduino
     var commandToSend = GET_LOG_INTERVAL
@@ -72,7 +73,6 @@ class ViewController: NSViewController {
         super.viewDidLoad()
         
         // Init
-        logInterval.stringValue = LOG_INTERVAL
         
         // Enable/disable buttons
         setTimeBtn.isEnabled = false
@@ -88,8 +88,30 @@ class ViewController: NSViewController {
         logTable.delegate = self
         logTable.dataSource = self
     }
+    
+    @IBAction func intervalSelection(_ sender: NSButton) {
+        switch sender.title {
+        case "10 min":
+            logIntervalString = "600"
+        case "15 min":
+            logIntervalString = "900"
+        case "30 min":
+            logIntervalString = "1800"
+        case "60 min":
+            logIntervalString = "3600"
+        default:
+            print("default")
+        }
+        
+        logIntervalBtn(sender)
+    }
+    
 
-    @IBAction func connect(_ sender: NSButton) {
+    @IBAction func ipAddressAction(_ sender: NSTextField) {
+        connect(sender)
+    }
+    
+    @IBAction func connect(_ sender: Any) {
         // Disconnect current connection
         timer.invalidate()
         server?.forceCancel()
@@ -245,7 +267,11 @@ class ViewController: NSViewController {
         startTimer()
     }
     
-    @IBAction func logIntervalBtn(_ sender: NSButton) {
+    @IBAction func logIntervalTime(_ sender: NSTextField) {
+        logIntervalBtn(sender)
+    }
+    
+    @IBAction func logIntervalBtn(_ sender: Any) {
         //Stop timer so we can set the log interval
         timer.invalidate()
         
@@ -253,7 +279,7 @@ class ViewController: NSViewController {
         logIntervalFromArduino.stringValue = "Log interval: ---- s"
         
         // Send SET_LOG_INTERVAL command
-        let setTimeCommand = SET_LOG_INTERVAL + " " + logInterval.stringValue
+        let setTimeCommand = SET_LOG_INTERVAL + " " + logIntervalString
         server!.send(content: setTimeCommand.data(using: String.Encoding.ascii),
                 completion: .contentProcessed({error in
                      if let error = error {
