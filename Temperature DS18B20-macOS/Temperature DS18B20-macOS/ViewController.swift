@@ -37,27 +37,26 @@ var reply = ""
 
 class ViewController: NSViewController {
 
-    @IBOutlet weak var hostNameFromArduino: NSTextField!
-    @IBOutlet weak var hostName: NSTextField!
-    @IBOutlet weak var ipAddressArduino: NSTextField!
-    @IBOutlet weak var temperatureOut: NSTextField!
-    @IBOutlet weak var timeFromArduino: NSTextField!
-    @IBOutlet weak var logInterval: NSTextField!
-    @IBOutlet weak var logIntervalFromArduino: NSTextField!
-    @IBOutlet weak var logTable: NSTableView!
-    @IBOutlet weak var info: NSTextField!
-        
+    @IBOutlet weak var hostNameFromArduinoTxt: NSTextField!
+    @IBOutlet weak var hostNameTxt: NSTextField!
+    @IBOutlet weak var ipAddressArduinoTxt: NSTextField!
+    @IBOutlet weak var temperatureTxt: NSTextField!
+    @IBOutlet weak var timeFromArduinoTxt: NSTextField!
+    @IBOutlet weak var logIntervalFromArduinoTxt: NSTextField!
+    @IBOutlet weak var infoTxt: NSTextField!
+    
     @IBOutlet weak var connectBtn: NSButton!
-    @IBOutlet weak var setTimeBtn: NSButton!
     @IBOutlet weak var saveLogBtn: NSButton!
     @IBOutlet weak var setLogIntervalBtn: NSButton!
     @IBOutlet weak var setHostNameBtn: NSButton!
     @IBOutlet weak var setTimeOnArduinoBtn: NSButton!
     
+    @IBOutlet weak var logTable: NSTableView!
+
     //Update interval properties
     var timer = Timer()
     let interval = TimeInterval(UPDATE_INTERVAL)     //Seconds
-    var logIntervalString = "10"
+    var logIntervalString = "600"
     
     // First command to send to Arduino
     var commandToSend = GET_LOG_INTERVAL
@@ -75,14 +74,13 @@ class ViewController: NSViewController {
         // Init
         
         // Enable/disable buttons
-        setTimeBtn.isEnabled = false
         saveLogBtn.isEnabled = false
         setLogIntervalBtn.isEnabled = false
         setTimeOnArduinoBtn.isEnabled = false
         setHostNameBtn.isEnabled = false
         
         // Info for user
-        info.stringValue = "Please connect to thermometer."
+        infoTxt.stringValue = "Please connect to thermometer."
         
         // Init table with log
         logTable.delegate = self
@@ -103,27 +101,22 @@ class ViewController: NSViewController {
             print("default")
         }
         
-        logIntervalBtn(sender)
+        setLogIntervalBtn(sender)
     }
     
-
-    @IBAction func ipAddressAction(_ sender: NSTextField) {
-        connect(sender)
-    }
-    
-    @IBAction func connect(_ sender: Any) {
+    @IBAction func connectBtn(_ sender: Any) {
         // Disconnect current connection
         timer.invalidate()
         server?.forceCancel()
         // Update display now we are disconnected
-        info.stringValue = "Connecting."
-        hostNameFromArduino.stringValue = "------"
-        temperatureOut.stringValue = "--.-- °C"
-        timeFromArduino.stringValue = "Time: --:--:--"
-        logIntervalFromArduino.stringValue = "Log interval: -- s"
+        infoTxt.stringValue = "Connecting."
+        hostNameFromArduinoTxt.stringValue = "------"
+        temperatureTxt.stringValue = "--.-- °C"
+        timeFromArduinoTxt.stringValue = "Time: --:--:--"
+        logIntervalFromArduinoTxt.stringValue = "Log interval: -- s"
 
         //Create host
-        let host = NWEndpoint.Host(ipAddressArduino.stringValue)
+        let host = NWEndpoint.Host(ipAddressArduinoTxt.stringValue)
         //Create port
         let port = NWEndpoint.Port(rawValue: portNumber)!
         //Create endpoint
@@ -174,7 +167,6 @@ class ViewController: NSViewController {
             // Connection available, start questioning the Arduino
             print("State: Ready.")
             startTimer()
-            setTimeBtn.isEnabled = true
             saveLogBtn.isEnabled = true
             setLogIntervalBtn.isEnabled = true
             setTimeOnArduinoBtn.isEnabled = true
@@ -214,23 +206,23 @@ class ViewController: NSViewController {
         let result = reply[..<firstSpace]
         
         // Evaluate the answer from the Arduino
-        info.stringValue = "Connected."
+        infoTxt.stringValue = "Connected."
         switch result {
         case GET_TEMPERATURE:
-            self.temperatureOut.stringValue = reply.suffix(from: firstSpace) + " °C"
+            self.temperatureTxt.stringValue = reply.suffix(from: firstSpace) + " °C"
         case GET_TIME:
-            self.timeFromArduino.stringValue = "Time: " + String(reply.suffix(from: firstSpace))
+            self.timeFromArduinoTxt.stringValue = "Time: " + String(reply.suffix(from: firstSpace))
         case GET_LOG:
             let startOfString = reply.index(after: firstSpace)  //Remove space
             logString = String(reply.suffix(from: startOfString))
             log = decodeLog(log: logString)
             logTable.reloadData()
         case GET_LOG_INTERVAL:
-            logIntervalFromArduino.stringValue = "Log interval: " + String(reply.suffix(from: firstSpace))
+            logIntervalFromArduinoTxt.stringValue = "Log interval: " + String(reply.suffix(from: firstSpace))
         case GET_HOSTNAME:
-            hostNameFromArduino.stringValue = String(reply.suffix(from: firstSpace))
+            hostNameFromArduinoTxt.stringValue = String(reply.suffix(from: firstSpace))
         case MESSAGE_EMPTY:
-            info.stringValue = "Waiting for sensor."
+            infoTxt.stringValue = "Waiting for sensor."
         default:
             print("Unknown command.")
         }
@@ -238,7 +230,7 @@ class ViewController: NSViewController {
 
     }
     
-    @IBAction func setTimeOnArduino(_ sender: NSButton) {
+    @IBAction func setTimeOnArduinoBtn(_ sender: NSButton) {
         let date = Date()
         let calender = Calendar.current
         let hour = calender.component(.hour, from: date)
@@ -257,7 +249,7 @@ class ViewController: NSViewController {
                      }
                  }))
         // Wait for response
-        timeFromArduino.stringValue = "Time: --:--:--"
+        timeFromArduinoTxt.stringValue = "Time: --:--:--"
         // Receive response
         server!.receiveMessage (completion: {(content, context,   isComplete, error) in
             print(String(decoding: content!, as:   UTF8.self))
@@ -267,16 +259,12 @@ class ViewController: NSViewController {
         startTimer()
     }
     
-    @IBAction func logIntervalTime(_ sender: NSTextField) {
-        logIntervalBtn(sender)
-    }
-    
-    @IBAction func logIntervalBtn(_ sender: Any) {
+    @IBAction func setLogIntervalBtn(_ sender: Any) {
         //Stop timer so we can set the log interval
         timer.invalidate()
         
         // Waiting for response
-        logIntervalFromArduino.stringValue = "Log interval: ---- s"
+        logIntervalFromArduinoTxt.stringValue = "Log interval: ---- s"
         
         // Send SET_LOG_INTERVAL command
         let setTimeCommand = SET_LOG_INTERVAL + " " + logIntervalString
@@ -296,15 +284,15 @@ class ViewController: NSViewController {
         startTimer()
     }
     
-    @IBAction func setHostnameOnArduino(_ sender: NSButton) {
+    @IBAction func setHostnameOnArduino(_ sender: Any) {
         //Stop timer so we can set the hostname
         timer.invalidate()
         
         // Wait for response
-        hostNameFromArduino.stringValue = "------"
+        hostNameFromArduinoTxt.stringValue = "------"
         
         // Send SET_HOSTNAME command
-        let setHostnameCommand = SET_HOSTNAME +  " " + hostName.stringValue
+        let setHostnameCommand = SET_HOSTNAME +  " " + hostNameTxt.stringValue
         server!.send(content: setHostnameCommand.data(using: String.Encoding.ascii),
                 completion: .contentProcessed({error in
                      if let error = error {
