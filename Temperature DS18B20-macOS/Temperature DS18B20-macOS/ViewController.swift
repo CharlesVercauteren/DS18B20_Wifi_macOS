@@ -47,6 +47,7 @@ class ViewController: NSViewController {
     
     @IBOutlet weak var connectBtn: NSButton!
     @IBOutlet weak var saveLogBtn: NSButton!
+    @IBOutlet weak var getLogBtn: NSButton!
     @IBOutlet weak var setLogIntervalBtn: NSButton!
     @IBOutlet weak var setHostNameBtn: NSButton!
     @IBOutlet weak var setTimeOnArduinoBtn: NSButton!
@@ -65,16 +66,15 @@ class ViewController: NSViewController {
     //IP via interface
     let portNumber: UInt16 = PORTNUMBER
     var server: NWConnection?
-    
+
     var log = [LogEntry]()
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        // Init
-        
+                
         // Enable/disable buttons
         saveLogBtn.isEnabled = false
+        getLogBtn.isEnabled = false
         setLogIntervalBtn.isEnabled = false
         setTimeOnArduinoBtn.isEnabled = false
         setHostNameBtn.isEnabled = false
@@ -100,14 +100,13 @@ class ViewController: NSViewController {
         default:
             print("default")
         }
-        
-        setLogIntervalBtn(sender)
     }
     
     @IBAction func connectBtn(_ sender: Any) {
         // Disconnect current connection
         timer.invalidate()
         server?.forceCancel()
+        
         // Update display now we are disconnected
         infoTxt.stringValue = "Connecting."
         hostNameFromArduinoTxt.stringValue = "------"
@@ -121,40 +120,9 @@ class ViewController: NSViewController {
         let port = NWEndpoint.Port(rawValue: portNumber)!
         //Create endpoint
         server = NWConnection(host: host, port: port, using: NWParameters.udp)
+        // The update handler will start questioning the Arduino
         server?.stateUpdateHandler = {(newState) in self.stateUpdateHandler(newState: newState) }
         server?.start(queue: .main)
-    }
-    
-    private func startTimer() {
-        if !timer.isValid {
-            timer = Timer.scheduledTimer(timeInterval: interval,
-                                         target: self,
-                                         selector: #selector(timerTic),
-                                         userInfo: nil,
-                                         repeats: true)
-        }
-    }
-    
-    @objc func timerTic() {
-        // On every timertic use a different command to
-        // question the Arduino
-        switch commandToSend {
-        case GET_TEMPERATURE:
-            commandToSend = GET_TIME
-        case GET_TIME:
-            commandToSend = GET_LOG
-        case GET_LOG:
-            commandToSend = GET_LOG_INTERVAL
-        case GET_LOG_INTERVAL:
-            commandToSend = GET_HOSTNAME
-        case GET_HOSTNAME:
-            commandToSend = GET_TEMPERATURE
-        default:
-            commandToSend = GET_TEMPERATURE
-        }
-        
-        self.sendCommand(server: self.server!, command: commandToSend)
-        self.receiveReply(server: self.server!)
     }
     
     private func stateUpdateHandler(newState: NWConnection.State){
@@ -168,9 +136,23 @@ class ViewController: NSViewController {
             print("State: Ready.")
             startTimer()
             saveLogBtn.isEnabled = true
+            getLogBtn.isEnabled = true
             setLogIntervalBtn.isEnabled = true
             setTimeOnArduinoBtn.isEnabled = true
             setHostNameBtn.isEnabled = true
+            
+            commandToSend = GET_HOSTNAME
+            sendCommand(server: server!, command: commandToSend)
+            receiveReply(server: server!)
+            
+            commandToSend = GET_TIME
+            sendCommand(server: server!, command: commandToSend)
+            receiveReply(server: server!)
+            
+            commandToSend = GET_LOG_INTERVAL
+            sendCommand(server: server!, command: commandToSend)
+            receiveReply(server: server!)
+            
         case .failed:
             print("State: Failed.")
         case .cancelled:
@@ -179,6 +161,28 @@ class ViewController: NSViewController {
             print("State: Unknown state.")
         }
     }
+    
+    private func startTimer() {
+        if !timer.isValid {
+            timer = Timer.scheduledTimer(timeInterval: interval,
+                                         target: self,
+                                         selector: #selector(timerTic),
+                                         userInfo: nil,
+                                         repeats: true)
+        }
+    }
+    
+    @objc func timerTic() {
+        // Is there still something in receive buffer ?
+        self.receiveReply(server: self.server!)
+        
+        // Get temperature
+        commandToSend = GET_TEMPERATURE
+        self.sendCommand(server: self.server!, command: commandToSend)
+        self.receiveReply(server: self.server!)
+    }
+    
+
     
     private func sendCommand(server: NWConnection, command: String) {
         server.send(content: command.data(using: String.Encoding.ascii),
@@ -191,7 +195,6 @@ class ViewController: NSViewController {
     }
     
     private func receiveReply(server: NWConnection){
-        
         var logString = ""
         
         // Completion handler receiveMessage not called if nothing received,
@@ -210,16 +213,16 @@ class ViewController: NSViewController {
         switch result {
         case GET_TEMPERATURE:
             self.temperatureTxt.stringValue = reply.suffix(from: firstSpace) + " °C"
-        case GET_TIME:
+        case GET_TIME, SET_TIME:
             self.timeFromArduinoTxt.stringValue = "Time: " + String(reply.suffix(from: firstSpace))
         case GET_LOG:
             let startOfString = reply.index(after: firstSpace)  //Remove space
             logString = String(reply.suffix(from: startOfString))
             log = decodeLog(log: logString)
             logTable.reloadData()
-        case GET_LOG_INTERVAL:
+        case GET_LOG_INTERVAL, SET_LOG_INTERVAL:
             logIntervalFromArduinoTxt.stringValue = "Log interval: " + String(reply.suffix(from: firstSpace))
-        case GET_HOSTNAME:
+        case GET_HOSTNAME, SET_HOSTNAME:
             hostNameFromArduinoTxt.stringValue = String(reply.suffix(from: firstSpace))
         case MESSAGE_EMPTY:
             infoTxt.stringValue = "Waiting for sensor."
@@ -241,19 +244,25 @@ class ViewController: NSViewController {
         
         // Send SET_TIME command
         let setTimeCommand = SET_TIME + String(format: " %02d:%02d",hour,minute)
-        server!.send(content: setTimeCommand.data(using: String.Encoding.ascii),
-                completion: .contentProcessed({error in
-                     if let error = error {
-                        print("error while sending data: \(error).")
-                        return
-                     }
-                 }))
+        sendCommand(server: server!, command: setTimeCommand)
+
         // Wait for response
         timeFromArduinoTxt.stringValue = "Time: --:--:--"
         // Receive response
-        server!.receiveMessage (completion: {(content, context,   isComplete, error) in
-            print(String(decoding: content!, as:   UTF8.self))
-        })
+        receiveReply(server: server!)
+        
+        // Continue
+        startTimer()
+    }
+    
+    @IBAction func getLogBtn(_ sender: NSButton) {
+        //Stop timer so we can get the log
+        timer.invalidate()
+        
+        // Send GET_LOG command
+        let setLogCommand = GET_LOG
+        sendCommand(server: server!, command: setLogCommand)
+        receiveReply(server: server!)
         
         // Continue
         startTimer()
@@ -267,18 +276,9 @@ class ViewController: NSViewController {
         logIntervalFromArduinoTxt.stringValue = "Log interval: ---- s"
         
         // Send SET_LOG_INTERVAL command
-        let setTimeCommand = SET_LOG_INTERVAL + " " + logIntervalString
-        server!.send(content: setTimeCommand.data(using: String.Encoding.ascii),
-                completion: .contentProcessed({error in
-                     if let error = error {
-                        print("error while sending data: \(error).")
-                        return
-                     }
-                 }))
-        // Receive response
-        server!.receiveMessage (completion: {(content, context,   isComplete, error) in
-            print(String(decoding: content!, as:   UTF8.self))
-        })
+        let setLogIntervalCommand = SET_LOG_INTERVAL + " " + logIntervalString
+        sendCommand(server: server!, command: setLogIntervalCommand)
+        receiveReply(server: server!)
         
         // Continue
         startTimer()
@@ -293,34 +293,23 @@ class ViewController: NSViewController {
         
         // Send SET_HOSTNAME command
         let setHostnameCommand = SET_HOSTNAME +  " " + hostNameTxt.stringValue
-        server!.send(content: setHostnameCommand.data(using: String.Encoding.ascii),
-                completion: .contentProcessed({error in
-                     if let error = error {
-                        print("error while sending data: \(error).")
-                        return
-                     }
-                 }))
- 
-        // Receive response
-        server!.receiveMessage (completion: {(content, context,   isComplete, error) in
-            print(String(decoding: content!, as:   UTF8.self))
-        })
+        sendCommand(server: server!, command: setHostnameCommand)
+        receiveReply(server: self.server!)
+        
         // Continue
         startTimer()
     }
     
     @IBAction func saveLog(_ sender: NSButton) {
-
-        //Stop timer so we can get the current log
-        timer.invalidate()
         
+        var fileURL: URL? //(fileURLWithPath: "")
+
         // Save log to ...
         let savePanel = NSSavePanel()
-        var fileURL: URL? //(fileURLWithPath: "")
-        var fileHandle: FileHandle?
         
         savePanel.title = "Save log."
-        savePanel.nameFieldStringValue = "Temperature.log"
+        savePanel.nameFieldStringValue = "temperature.log"
+        
         switch savePanel.runModal() {
         case .OK:
             fileURL = savePanel.url!
@@ -330,36 +319,19 @@ class ViewController: NSViewController {
             print("NSOpenPanel: error")
             exit(0)
         }
-                
+          
         if (fileURL != nil) {
-            fileHandle = FileHandle(forWritingAtPath: fileURL!.path)
-            // Send GET_LOG command
-            server!.send(content: GET_LOG.data(using: String.Encoding.ascii),
-                         completion: .contentProcessed({error in
-                            if let error = error {
-                                print("error while sending data: \(error).")
-                                return
-                            }
-                         }))
-            // Receive response
-            server!.receiveMessage (completion: {(content, context,   isComplete, error) in
-                print(String(decoding: content!, as:   UTF8.self))
-                let toSave = String(decoding: content!, as:   UTF8.self)
-                let firstSpace = toSave.firstIndex(of: " ") ?? toSave.endIndex
-                let index = toSave.index(after: firstSpace)
-                // Write to file
-                do {
-                    //try String(decoding: content!, as:   UTF8.self).data(using: .ascii)?.write(to: fileURL!)
-                    try String(toSave.suffix(from: index)).data(using: .ascii)?.write(to: fileURL!)
-                }
-                catch {
-                    print("Error: func getLog: writing file")
-                }
-            })
+            var str = ""
+            for row in 0..<log.count {
+                str += log[row].time + "\t" + log[row].temperature + "\n"
+            }
+            do {
+                try str.data(using: .ascii)?.write(to: fileURL!)
+            }
+            catch {
+                print("Error writing file")
+            }
         }
-        
-        // Continue
-        startTimer()
     }
     
     private func decodeLog(log: String) -> [LogEntry] {

@@ -142,7 +142,7 @@
                                 </connections>
                             </button>
                             <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="XzW-1i-37D">
-                                <rect key="frame" x="15" y="37" width="125" height="32"/>
+                                <rect key="frame" x="133" y="139" width="125" height="32"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <buttonCell key="cell" type="push" title="Set time" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="8eU-si-ilv">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -180,7 +180,7 @@
                                 </textFieldCell>
                             </textField>
                             <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="2mi-dk-wWJ">
-                                <rect key="frame" x="133" y="115" width="125" height="32"/>
+                                <rect key="frame" x="73" y="41" width="125" height="32"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <buttonCell key="cell" type="push" title="Set log interval" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="Kt9-Ur-tw9">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -232,19 +232,19 @@
                                 <rect key="frame" x="22" y="297" width="229" height="5"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
                             </box>
-                            <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="fsl-rh-F5O">
-                                <rect key="frame" x="133" y="37" width="125" height="32"/>
+                            <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="NH1-Cv-CEr">
+                                <rect key="frame" x="361" y="67" width="125" height="32"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <buttonCell key="cell" type="push" title="Save log" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="X3k-El-b9k">
+                                <buttonCell key="cell" type="push" title="Get log" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="Lbf-YU-AHV">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
                                 </buttonCell>
                                 <connections>
-                                    <action selector="saveLog:" target="XfG-lQ-9wD" id="KPD-PU-6Gj"/>
+                                    <action selector="getLogBtn:" target="XfG-lQ-9wD" id="2uY-Bz-VPj"/>
                                 </connections>
                             </button>
                             <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="2np-FN-H7R">
-                                <rect key="frame" x="20" y="152" width="66" height="18"/>
+                                <rect key="frame" x="42" y="109" width="66" height="18"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <buttonCell key="cell" type="radio" title="10 min" bezelStyle="regularSquare" imagePosition="left" alignment="left" state="on" inset="2" id="5Cb-T4-sHe">
                                     <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -255,7 +255,7 @@
                                 </connections>
                             </button>
                             <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Bez-6a-je9">
-                                <rect key="frame" x="20" y="131" width="66" height="18"/>
+                                <rect key="frame" x="161" y="109" width="66" height="18"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <buttonCell key="cell" type="radio" title="15 min" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="Kg1-V8-gC3">
                                     <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -266,7 +266,7 @@
                                 </connections>
                             </button>
                             <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="HIj-Bb-Kr6">
-                                <rect key="frame" x="20" y="109" width="68" height="18"/>
+                                <rect key="frame" x="42" y="87" width="68" height="18"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <buttonCell key="cell" type="radio" title="30 min" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="awV-OG-gB7">
                                     <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -277,7 +277,7 @@
                                 </connections>
                             </button>
                             <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="GJA-9k-18b">
-                                <rect key="frame" x="20" y="87" width="68" height="18"/>
+                                <rect key="frame" x="161" y="87" width="68" height="18"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <buttonCell key="cell" type="radio" title="60 min" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="J1i-ny-VfU">
                                     <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -288,16 +288,16 @@
                                 </connections>
                             </button>
                             <scrollView fixedFrame="YES" autohidesScrollers="YES" horizontalLineScroll="24" horizontalPageScroll="10" verticalLineScroll="24" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ois-7x-gP9">
-                                <rect key="frame" x="283" y="44" width="250" height="256"/>
+                                <rect key="frame" x="314" y="103" width="219" height="197"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <clipView key="contentView" drawsBackground="NO" id="UyI-lF-wgu">
-                                    <rect key="frame" x="1" y="1" width="248" height="254"/>
+                                    <rect key="frame" x="1" y="1" width="217" height="195"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
                                         <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" columnReordering="NO" columnSelection="YES" columnResizing="NO" multipleSelection="NO" autosaveColumns="NO" rowHeight="24" rowSizeStyle="automatic" headerView="vPg-GH-MSE" viewBased="YES" id="Fni-Zg-A6t">
-                                            <rect key="frame" x="0.0" y="0.0" width="248" height="226"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="217" height="167"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                            <size key="intercellSpacing" width="38" height="0.0"/>
+                                            <size key="intercellSpacing" width="7" height="0.0"/>
                                             <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                             <tableViewGridLines key="gridStyleMask" vertical="YES"/>
                                             <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
@@ -315,11 +315,11 @@
                                                     <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                     <prototypeCellViews>
                                                         <tableCellView identifier="Time" id="fLe-QJ-bLh">
-                                                            <rect key="frame" x="19" y="0.0" width="98" height="24"/>
+                                                            <rect key="frame" x="3" y="0.0" width="87" height="24"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
                                                                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="jzn-Jo-X74">
-                                                                    <rect key="frame" x="0.0" y="4" width="98" height="16"/>
+                                                                    <rect key="frame" x="0.0" y="4" width="87" height="16"/>
                                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                                                     <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="Time" id="knx-Tz-yKK">
                                                                         <font key="font" usesAppearanceFont="YES"/>
@@ -347,11 +347,11 @@
                                                     <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                     <prototypeCellViews>
                                                         <tableCellView identifier="Temperature" id="A00-CR-bJL">
-                                                            <rect key="frame" x="144" y="0.0" width="95" height="19"/>
+                                                            <rect key="frame" x="113" y="0.0" width="85" height="19"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             <subviews>
                                                                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="JXk-2f-iV3">
-                                                                    <rect key="frame" x="0.0" y="2" width="95" height="16"/>
+                                                                    <rect key="frame" x="0.0" y="2" width="85" height="16"/>
                                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                                                     <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="Temperature" id="FkI-5E-ed8">
                                                                         <font key="font" usesAppearanceFont="YES"/>
@@ -372,7 +372,7 @@
                                     <nil key="backgroundColor"/>
                                 </clipView>
                                 <scroller key="horizontalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="YES" id="2rq-3H-Kw0">
-                                    <rect key="frame" x="1" y="239" width="248" height="16"/>
+                                    <rect key="frame" x="1" y="239" width="217" height="16"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                 </scroller>
                                 <scroller key="verticalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" doubleValue="1" horizontal="NO" id="FUw-M2-umC">
@@ -380,14 +380,26 @@
                                     <autoresizingMask key="autoresizingMask"/>
                                 </scroller>
                                 <tableHeaderView key="headerView" wantsLayer="YES" id="vPg-GH-MSE">
-                                    <rect key="frame" x="0.0" y="0.0" width="248" height="28"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="217" height="28"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                 </tableHeaderView>
                             </scrollView>
+                            <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="fsl-rh-F5O">
+                                <rect key="frame" x="361" y="37" width="125" height="32"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                <buttonCell key="cell" type="push" title="Save log" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="X3k-El-b9k">
+                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                </buttonCell>
+                                <connections>
+                                    <action selector="saveLog:" target="XfG-lQ-9wD" id="KPD-PU-6Gj"/>
+                                </connections>
+                            </button>
                         </subviews>
                     </view>
                     <connections>
                         <outlet property="connectBtn" destination="KAx-iZ-hrr" id="W6V-Im-cGs"/>
+                        <outlet property="getLogBtn" destination="NH1-Cv-CEr" id="ltv-4a-VVi"/>
                         <outlet property="hostNameFromArduinoTxt" destination="tA9-xI-Eff" id="fBU-z4-owE"/>
                         <outlet property="hostNameTxt" destination="dR8-Ys-OGl" id="gW8-KA-ffc"/>
                         <outlet property="infoTxt" destination="dG0-5I-Mia" id="yOq-pN-3Kw"/>
